@@ -1,0 +1,56 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'systems.manifold.manifold-gradle-plugin' version '0.0.2-alpha'
+}
+
+group 'io.github.headlesshq'
+version "$project_version"
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    annotationProcessor("systems.manifold:manifold-preprocessor:${rootProject.manifold_version}")
+}
+
+compileJava {
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.compilerArgs.addAll(['--release', '8'])
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            "${name.toLowerCase()}"(MavenPublication) {
+                ((MavenPublication) it).groupId "${group}"
+                ((MavenPublication) it).artifactId "${archivesBaseName.toLowerCase()}"
+                ((MavenPublication) it).version "${version}"
+                from components.java
+            }
+        }
+
+        repositories {
+            if (System.getenv('DEPLOY_TO_GITHUB_PACKAGES_URL') == null) {
+                maven {
+                    name = 'BuildDirMaven'
+                    url = rootProject.projectDir.toPath().parent.resolve('build').resolve('maven')
+                }
+            } else {
+                maven {
+                    name = 'GithubPagesMaven'
+                    url = System.getenv('DEPLOY_TO_GITHUB_PACKAGES_URL')
+                    credentials {
+                        username = System.getenv('GITHUB_ACTOR')
+                        password = System.getenv('GITHUB_TOKEN')
+                    }
+                }
+            }
+        }
+    }
+}
