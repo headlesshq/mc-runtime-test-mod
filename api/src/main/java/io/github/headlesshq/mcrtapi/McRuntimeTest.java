@@ -4,6 +4,7 @@ package io.github.headlesshq.mcrtapi;
  * A controller class outside of our Mixin.
  * To modify the behaviour of McRuntimeTest you can hook into the methods of this class via a Mixin.
  */
+@SuppressWarnings("unused") // some properties might only be used by newer versions of mc
 public class McRuntimeTest {
     /**
      * Whether to run Minecrafts game tests or not.
