@@ -1,0 +1,82 @@
+---
+name: Flex Build
+
+"on":
+  workflow_call:
+    inputs:
+      mc:
+        description: Minecraft version
+        type: string
+      lex:
+        description: LexForge version
+        type: string
+      neo:
+        description: NeoForge version
+        type: string
+      java:
+        description: Java version
+        required: true
+        type: string
+      upload:
+        description: Upload the build artifacts
+        default: true
+        type: boolean
+      publish:
+        description: Run Gradle publish
+        default: false
+        type: boolean
+
+jobs:
+  build: # TODO: add build attestation and generate then combine gradle dependency graphs for SBOM
+    name: Build ${{ inputs.mc }}
+    runs-on: blacksmith-2vcpu-ubuntu-2204
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Cache build
+        id: cache
+        uses: useblacksmith/cache@v5
+        with:
+          path: build
+          key: build-${{ inputs.mc }}-${{ hashFiles('./*') }}
+
+      - if: steps.cache.outputs.cache-hit != 'true'
+        name: Setup Java
+        uses: useblacksmith/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ inputs.java }}
+
+      - if: steps.cache.outputs.cache-hit != 'true'
+        name: Setup Gradle
+        uses: useblacksmith/setup-gradle/setup-gradle@v5
+        with:
+          workflow-job-context: '{}' # FIXME: avoid this cache duplication workaround
+
+      - if: |
+          steps.cache.outputs.cache-hit != 'true'
+          && !inputs.release
+        name: Gradle build
+        run: >
+          ./gradlew build --stacktrace
+          -Pminecraft_version=${{ inputs.mc }}
+          -Plexforge_version=${{ inputs.lex }}
+          -Pneoforge_version=${{ inputs.neo }}
+
+      - if: inputs.release
+        name: Gradle publish
+        env:
+          IS_MAVEN_PUB: true
+          DEPLOY_TO_GITHUB_PACKAGES_URL: https://maven.pkg.github.com/${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew publish
+
+      - if: inputs.upload
+        name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jars-${{ inputs.mc }}
+          path: build/libs/*.jar
