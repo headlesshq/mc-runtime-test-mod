@@ -26,7 +26,7 @@ Mc-Runtime-Test-Mods can be configured via a few System properties.
 These are listed and documented [here](api/src/main/java/io/github/headlesshq/mcrtapi/McRuntimeTest.java).
 You can set these properties in the mc-runtime-test action with the headlessmc-command input, like this:
 ```yaml
-uses: 3arthqu4ke/mc-runtime-test@3.0.0
+uses: headlesshq/mc-runtime-test@3.0.0
 with:
   mc: 1.21.4
   modloader: fabric

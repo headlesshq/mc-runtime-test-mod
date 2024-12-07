@@ -33,8 +33,19 @@ def loadVersions() {
     for (int i = 0; i < versions.size(); i++) {
         versions[i] = versions[i].replaceAll("\\.properties", "")
     }
+    // sort by semantic version
+    versions = versions.sort { a, b ->
+        def partsA = a.tokenize('.')*.toInteger()
+        def partsB = b.tokenize('.')*.toInteger()
 
-    versions.sort()
+        int comparison = partsA[0] <=> partsB[0]
+        if (comparison != 0) return comparison
+
+        comparison = partsA[1] <=> partsB[1]
+        if (comparison != 0) return comparison
+
+        return partsA[2] <=> partsB[2]
+    }
 
     var mcVersion = minecraft_version
     var mcIndex = versions.indexOf(minecraft_version)

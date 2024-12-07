@@ -71,7 +71,7 @@ public class McGameTestRunner {
             Rotation rotation = StructureUtils.getRotationForRotationSteps(0);
                 #if MC_VER == MC_1_16_5
                 Collection<GameTestInfo> tests = GameTestRunner.runTests(testFunctions, pos, rotation, level, GameTestTicker.singleton, 8);
-                #elif MC_VER < 1_20_6
+                #elif MC_VER < MC_1_20_6
                 Collection<GameTestInfo> tests = GameTestRunner.runTests(testFunctions, pos, rotation, level, GameTestTicker.SINGLETON, 8);
                 #endif
             MultipleTestTracker multipleTestTracker = new MultipleTestTracker(tests);

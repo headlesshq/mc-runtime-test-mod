@@ -172,7 +172,10 @@ dependencies {
     if (project.loaders.contains('legacyfabric')) {
         implementation 'net.minecraft:launchwrapper:1.12'
         jarLibs 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
-        jarLibs('org.spongepowered:mixin:0.8.5') {
+        // ewww, legaacy minecraft needs this
+        // TODO: this could cause problems with 1.12.2 mods using newer versions
+        //  they could just rename their jar to aaaaa-modname.jar though?
+        jarLibs('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
             exclude module: 'launchwrapper'
             exclude module: 'guava'
             exclude module: 'gson'
