@@ -29,11 +29,10 @@ pluginManagement {
 }
 
 def loadVersions() {
-    def versions = fileTree("versions").files.name
-    for (int i = 0; i < versions.size(); i++) {
-        versions[i] = versions[i].replaceAll("\\.properties", "")
-    }
-    // sort by semantic version
+    // Collect and clean version names from the "versions" directory
+    def versions = fileTree("versions").files.name.collect { it.replaceAll("\\.properties", "") }
+
+    // Sort by semantic version
     versions = versions.sort { a, b ->
         def partsA = a.tokenize('.')*.toInteger()
         def partsB = b.tokenize('.')*.toInteger()
@@ -47,17 +46,7 @@ def loadVersions() {
         return partsA[2] <=> partsB[2]
     }
 
-    var mcVersion = minecraft_version
-    var mcIndex = versions.indexOf(minecraft_version)
-    def props = new Properties()
-    props.load(new FileInputStream("$rootDir/versions/" + "$mcVersion" + ".properties"))
-
-    props.each { prop ->
-        gradle.ext.set(prop.key, prop.value)
-    }
-
     gradle.ext.mc_versions = versions
-    gradle.ext.mc_index = mcIndex
 }
 
 loadVersions()

@@ -10,52 +10,39 @@ plugins {
     // id "io.github.pacifistmc.forgix" version "1.2.9"
 }
 
-def setupPreprocessors(List<String> mc_versions, int mc_index) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < mc_versions.size(); i++) {
-        String verStr = mc_versions[i].replace(".", "_");
-        sb.append("MC_" + verStr + "=" + i.toString() + "\n");
-        if (mc_index == i) {
-            sb.append("MC_VER=" + i.toString() + "\n");
-        }
-    }
-
-    new File(projectDir, "build.properties").text = sb.toString()
-}
-
+// TODO: is this necessary?
 project.gradle.ext.getProperties().each { prop ->
     rootProject.ext.set(prop.key, prop.value)
 }
 
-setupPreprocessors(rootProject.mc_versions, rootProject.mc_index)
+def requestedJavaVersion = project.findProperty('java_version')
+if (requestedJavaVersion == null) {
+    throw new GradleException("You must specify a java_version property, e.g. ./gradlew build -Pjava_version=21")
+}
+
+def setupPreprocessors(List<String> mcVersions, String currentVersion) {
+    StringBuilder sb = new StringBuilder();
+    mcVersions.eachWithIndex { ver, i ->
+        String verStr = ver.replace(".", "_");
+        sb.append("MC_${verStr}=${i}\n")
+        if (ver == currentVersion) {
+            sb.append("MC_VER=${i}\n")
+        }
+    }
+    new File(projectDir, "build.properties").text = sb.toString()
+}
 
 manifold {
     manifoldVersion = rootProject.manifold_version
 }
 
-group 'io.github.headlesshq'
-version "$minecraft_version-${project(':api').project_version}"
-
+group = 'io.github.headlesshq'
 base {
     archivesName = 'mc-runtime-test'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
-
-sourceSets {
-    fabric {
-        compileClasspath += sourceSets.main.output
-        runtimeClasspath += sourceSets.main.output
-    }
-    lexforge {
-        compileClasspath += sourceSets.main.output
-        runtimeClasspath += sourceSets.main.output
-    }
-    if (project.loaders.contains('neoforge')) {
-        neoforge
-    }
-}
 
 repositories {
     maven {
@@ -76,244 +63,318 @@ repositories {
     }
 }
 
-unimined.minecraft {
-    version project.minecraft_version
+def anyVersionBuilt = false
 
-    mappings {
-        for (mapping in ((String) project.mappings).split(",")) {
-            String[] split = mapping.split(':')
-            String name = split[0]
-            if (name == 'searge') {
-                searge()
-            } else if (name == 'mcp') {
-                mcp("stable", split[1])
-            } else if (name == 'mojmap') {
-                mojmap()
-                // intermediary()
-                // yarn(1)
-                devFallbackNamespace "mojmap"
+// TODO: is mc_versions redundant? why delegate this to settings.gradle?
+rootProject.mc_versions.each { mcVersion ->
+    def propsFile = new File("$rootDir/versions/${mcVersion}.properties")
+
+    def props = new Properties()
+    props.load(new FileInputStream(propsFile))
+
+    def currentJavaVersion = props.getProperty('java_version')
+    if (currentJavaVersion == null) {
+        throw new GradleException("Missing 'java_version' property in ${mcVersion}.properties")
+    }
+
+    // Skip this version if it doesn't match the requested java_version
+    if (currentJavaVersion != requestedJavaVersion) {
+        println "Skipping build for $mcVersion as it requires Java $currentJavaVersion, not $requestedJavaVersion."
+        return // move to the next version
+    }
+
+    // At this point, we know this version matches the requested Java version
+    anyVersionBuilt = true
+
+    def currentMinecraftVersion = props.getProperty('minecraft_version')
+    def currentLexforgeVersion = props.getProperty('lexforge_version')
+    def currentNeoForgeVersion = props.getProperty('neoforge_version')
+    def currentLoaders = props.getProperty('loaders')?.split(',')*.trim()
+    def currentMappings = props.getProperty('mappings')
+
+    println "'minecraft_version' = ${currentMinecraftVersion}"
+    println "'java_version' = ${currentJavaVersion}"
+    println "'lexforge_version' = ${currentLexforgeVersion}"
+    println "'neoforge_version' = ${currentNeoForgeVersion}"
+    println "'loaders' = ${currentLoaders}"
+    println "'mappings' = ${currentMappings}"
+
+    setupPreprocessors(rootProject.mc_versions, mcVersion)
+
+    def buildVersion = "${currentMinecraftVersion}-${project(':api').project_version}"
+
+    def verId = mcVersion.replace('.', '_')
+    def fabricSourceSetName = "fabric_${verId}"
+    def lexforgeSourceSetName = "lexforge_${verId}"
+    def neoforgeSourceSetName = "neoforge_${verId}"
+
+    sourceSets { // TODO: why not just make everything conditional?
+        "${verId}" {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+        }
+        "${fabricSourceSetName}" {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+        }
+        "${lexforgeSourceSetName}" {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+        }
+        if (currentLoaders.contains('neoforge')) {
+            "${neoforgeSourceSetName}" {
+                compileClasspath += main.output
+                runtimeClasspath += main.output
             }
         }
     }
 
-    defaultRemapJar = false
-}
-
-unimined.minecraft(sourceSets.fabric) {
-    combineWith(sourceSets.main)
-
-    if (project.loaders.contains('legacyfabric')) {
-        legacyFabric {
-            loader project.fabric_version
+    unimined.minecraft(sourceSets["${verId}"]) {
+        version currentMinecraftVersion
+        mappings {
+            currentMappings.split(',').each { mapping ->
+                String[] split = mapping.split(':')
+                String name = split[0]
+                if (name == 'searge') {
+                    searge()
+                } else if (name == 'mcp') {
+                    mcp("stable", split[1])
+                } else if (name == 'mojmap') {
+                    mojmap()
+                    // intermediary()
+                    // yarn(1)
+                    devFallbackNamespace "mojmap"
+                }
+            }
         }
-    } else {
-        fabric {
-            loader project.fabric_version
+        defaultRemapJar = false
+    }
+
+    unimined.minecraft(sourceSets["${fabricSourceSetName}"]) {
+        combineWith(sourceSets["${verId}"])
+        if (currentLoaders.contains('legacyfabric')) {
+            legacyFabric {
+                loader rootProject.fabric_version
+            }
+        } else {
+            fabric {
+                loader rootProject.fabric_version
+            }
+        }
+        defaultRemapJar = true
+    }
+
+    if (currentLoaders.contains('neoforge')) {
+        unimined.minecraft(sourceSets["${neoforgeSourceSetName}"]) {
+            combineWith(sourceSets["${verId}"])
+
+            neoForge {
+                loader currentNeoForgeVersion
+                mixinConfig 'mc_runtime_test.mixins.json'
+            }
+
+            minecraftRemapper.config {
+                ignoreConflicts(true)
+            }
+
+            defaultRemapJar = true
         }
     }
 
-    defaultRemapJar = true
-}
+    unimined.minecraft(sourceSets["${lexforgeSourceSetName}"]) {
+        combineWith(sourceSets["${verId}"])
 
-if (project.loaders.contains('neoforge')) {
-    unimined.minecraft(sourceSets.neoforge) {
-        combineWith(sourceSets.main)
-
-        neoForge {
-            loader project.neoforge_version
+        minecraftForge {
+            loader currentLexforgeVersion
             mixinConfig 'mc_runtime_test.mixins.json'
-        }
-
-        minecraftRemapper.config {
-            ignoreConflicts(true)
         }
 
         defaultRemapJar = true
     }
-}
 
-unimined.minecraft(sourceSets.lexforge) {
-    combineWith(sourceSets.main)
+    configurations {
+        mainImplementation
+        implementation {
+            extendsFrom configurations["${lexforgeSourceSetName}Implementation"]
+            extendsFrom configurations["${fabricSourceSetName}Implementation"]
+        }
 
-    minecraftForge {
-        loader project.lexforge_version
-        mixinConfig 'mc_runtime_test.mixins.json'
+        jarLibs
+        implementation.extendsFrom jarLibs
     }
 
-    defaultRemapJar = true
-}
-
-configurations {
-    mainImplementation
-    implementation {
-        extendsFrom lexforgeImplementation
-        extendsFrom fabricImplementation
-    }
-
-    jarLibs
-    implementation.extendsFrom jarLibs
-}
-
-sourceSets {
-    main {
+    sourceSets.main {
         compileClasspath += configurations.mainImplementation
         runtimeClasspath += configurations.mainImplementation
     }
-}
 
-dependencies {
-    annotationProcessor("systems.manifold:manifold-preprocessor:${rootProject.manifold_version}")
-    lexforgeAnnotationProcessor("systems.manifold:manifold-preprocessor:${rootProject.manifold_version}")
-    fabricAnnotationProcessor("systems.manifold:manifold-preprocessor:${rootProject.manifold_version}")
-    if (project.loaders.contains('neoforge')) {
-        neoforgeAnnotationProcessor("systems.manifold:manifold-preprocessor:${rootProject.manifold_version}")
-    }
-
-    if (project.loaders.contains('legacyfabric')) {
-        implementation 'net.minecraft:launchwrapper:1.12'
-        jarLibs 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
-        // ewww, legaacy minecraft needs this
-        // TODO: this could cause problems with 1.12.2 mods using newer versions
-        //  they could just rename their jar to aaaaa-modname.jar though?
-        jarLibs('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
-            exclude module: 'launchwrapper'
-            exclude module: 'guava'
-            exclude module: 'gson'
-            exclude module: 'commons-io'
+    dependencies {
+        annotationProcessor("systems.manifold:manifold-preprocessor:${rootProject.manifold_version}")
+        "${lexforgeSourceSetName}AnnotationProcessor"("systems.manifold:manifold-preprocessor:${rootProject.manifold_version}")
+        "${fabricSourceSetName}AnnotationProcessor"("systems.manifold:manifold-preprocessor:${rootProject.manifold_version}")
+        if (currentLoaders.contains('neoforge')) {
+            "${neoforgeSourceSetName}AnnotationProcessor"("systems.manifold:manifold-preprocessor:${rootProject.manifold_version}")
         }
-    } else {
-        implementation('org.spongepowered:mixin:0.8.5') {
-            exclude module: 'launchwrapper'
-            exclude module: 'guava'
-            exclude module: 'gson'
-            exclude module: 'commons-io'
+
+        if (currentLoaders.contains('legacyfabric')) {
+            implementation 'net.minecraft:launchwrapper:1.12'
+            jarLibs 'com.github.ImpactDevelopment:SimpleTweaker:1.2'
+            // ewww, legaacy minecraft needs this
+            // TODO: this could cause problems with 1.12.2 mods using newer versions
+            //  they could just rename their jar to aaaaa-modname.jar though?
+            jarLibs('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
+                exclude module: 'launchwrapper'
+                exclude module: 'guava'
+                exclude module: 'gson'
+                exclude module: 'commons-io'
+            }
+        } else {
+            implementation('org.spongepowered:mixin:0.8.5') {
+                exclude module: 'launchwrapper'
+                exclude module: 'guava'
+                exclude module: 'gson'
+                exclude module: 'commons-io'
+            }
+        }
+
+        // yes, I actually want this at runtime to use assertions!
+        jarLibs 'org.junit.jupiter:junit-jupiter-api:5.10.1'
+        jarLibs project(':api')
+    }
+
+    def mc_platforms = ['Fabric', 'Lexforge']
+    if (currentLoaders.contains('neoforge')) {
+        mc_platforms = ['Fabric', 'Neoforge', 'Lexforge']
+    }
+
+    for (String platform_capitalized : mc_platforms) {
+        def platform = platform_capitalized.toLowerCase()
+        def sourceSetName
+        if (platform_capitalized == 'Fabric') sourceSetName = fabricSourceSetName
+        else if (platform_capitalized == 'Lexforge') sourceSetName = lexforgeSourceSetName
+        else if (platform_capitalized == 'Neoforge') sourceSetName = neoforgeSourceSetName
+
+        // Capitalize the source set name correctly (e.g., fabric_1_19_2 -> Fabric_1_19_2)
+        def remapTaskName = "remap${sourceSetName.capitalize()}Jar"
+        def remapJarTask = tasks.named(remapTaskName, AbstractArchiveTask).get()
+
+        def shadowTaskName = "${sourceSetName}ShadowJar"
+        def shadowTask = tasks.register(shadowTaskName, ShadowJar) {
+            dependsOn(remapJarTask)
+            group = 'build'
+            archiveClassifier = "${platform}-${currentMinecraftVersion}-release"
+            from remapJarTask.outputs
+            configurations += [configurations.jarLibs]
+            exclude 'META-INF/*.RSA', 'META-INF/*.SF', "**/module-info.class"
+        }
+
+        tasks.named('build') {
+            finalizedBy(shadowTask)
         }
     }
 
-    // yes, I actually want this at runtime to use assertions!
-    jarLibs 'org.junit.jupiter:junit-jupiter-api:5.10.1'
-    jarLibs project(':api')
-}
-
-def mc_platforms = ['Fabric', 'Lexforge']
-if (project.loaders.contains('neoforge')) {
-    mc_platforms = ['Fabric', 'Neoforge', 'Lexforge']
-}
-
-for (String platform_capitalized : mc_platforms) {
-    def platform = platform_capitalized.toLowerCase()
-    def remapJarTask = tasks.named("remap${platform_capitalized}Jar", AbstractArchiveTask).get()
-    def shadowTask = tasks.register("${platform}ShadowJar", ShadowJar) {
-        dependsOn(remapJarTask)
-        it.group = 'build'
-        it.archiveClassifier = "${platform}-release"
-        from remapJarTask.outputs
-        it.configurations += [ project.configurations.jarLibs ]
-        // Mixin is signed
-        exclude 'META-INF/*.RSA'
-        exclude 'META-INF/*.SF'
-        exclude "**/module-info.class"
+    jar {
+        enabled = false
     }
 
-    tasks.named('build') { finalizedBy(shadowTask) }
-}
+    tasks.withType(org.gradle.jvm.tasks.Jar).configureEach {
+        from("LICENSE") {
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+            rename { "${it}_${archivesBaseName}" }
+        }
 
-
-jar {
-    enabled = false
-}
-
-tasks.withType(org.gradle.jvm.tasks.Jar).configureEach {
-    from("LICENSE") {
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-        rename { "${it}_${project.archivesBaseName}" }
-    }
-
-    manifest {
-        if (project.loaders.contains('legacyfabric')) {
-            attributes(
+        manifest {
+            if (currentLoaders.contains('legacyfabric')) {
+                attributes(
                     'Implementation-Title': 'MC-Runtime-Test',
                     'TweakClass': 'io.github.headlesshq.mcrt.tweaker.McRuntimeTestTweaker',
                     'MixinConfigs': "mc_runtime_test.mixins.json",
-                    'Implementation-Version': project.version,
-            )
-        } else { // no TweakClass
-            attributes(
+                    'Implementation-Version': buildVersion,
+                )
+            } else {
+                attributes(
                     'Implementation-Title': 'MC-Runtime-Test',
                     'MixinConfigs': "mc_runtime_test.mixins.json",
-                    'Implementation-Version': project.version,
-            )
+                    'Implementation-Version': buildVersion,
+                )
+            }
         }
     }
-}
 
-def expansions = [
-    version    : project.version,
-    mc_version : minecraft_version,
-]
+    def expansions = [
+        version    : buildVersion,
+        mc_version : currentMinecraftVersion,
+    ]
 
-processFabricResources {
-    filesMatching("fabric.mod.json") {
-        expand expansions
-    }
-}
-
-processLexforgeResources {
-    filesMatching("META-INF/mods.toml") {
-        expand expansions
+    tasks.named("process${fabricSourceSetName.capitalize()}Resources").configure {
+        filesMatching("fabric.mod.json") {
+            expand expansions
+        }
     }
 
-    filesMatching("mcmod.info") {
-        expand expansions
-    }
-}
-
-if (project.loaders.contains('neoforge')) {
-    processNeoforgeResources {
-        // TODO: this is legacy neoforge, newer neoforge needs the other toml, check if its ok to leave this in
+    tasks.named("process${lexforgeSourceSetName.capitalize()}Resources").configure {
         filesMatching("META-INF/mods.toml") {
             expand expansions
         }
 
-        filesMatching("META-INF/neoforge.mods.toml") {
+        filesMatching("mcmod.info") {
             expand expansions
         }
     }
-}
 
-afterEvaluate {
-    publishing {
-        publications {
-            "${name.toLowerCase()}"(MavenPublication) {
-                ((MavenPublication) it).groupId "${group}"
-                ((MavenPublication) it).artifactId "${archivesBaseName.toLowerCase()}"
-                ((MavenPublication) it).version "${version}"
-                from components.java
-                for (String platform: mc_platforms) {
-                    String platform_lower = platform.toLowerCase()
-                    artifact tasks.named("${platform_lower}Jar").get()
-                    artifact tasks.named("remap${platform}Jar").get()
-                    artifact tasks.named("${platform_lower}ShadowJar").get()
-                }
+    if (currentLoaders.contains('neoforge')) {
+        tasks.named("process${neoforgeSourceSetName.capitalize()}Resources").configure {
+            filesMatching("META-INF/mods.toml") {
+                expand expansions
+            }
+
+            filesMatching("META-INF/neoforge.mods.toml") {
+                expand expansions
             }
         }
+    }
 
-        repositories {
-            if (System.getenv('DEPLOY_TO_GITHUB_PACKAGES_URL') == null) {
-                maven {
-                    name = 'BuildDirMaven'
-                    url = rootProject.projectDir.toPath().parent.resolve('build').resolve('maven')
+    afterEvaluate {
+        publishing {
+            publications {
+                "mcruntimetest_${verId}"(MavenPublication) {
+                    ((MavenPublication) it).groupId "${group}"
+                    ((MavenPublication) it).artifactId "${archivesBaseName.toLowerCase()}-${currentMinecraftVersion}"
+                    ((MavenPublication) it).version "${buildVersion}"
+                    from components.java
+                    for (String platform: mc_platforms) {
+                        String platform_lower = platform.toLowerCase()
+                        artifact tasks.named("${platform_lower}_${verId}Jar").get()
+                        artifact tasks.named("remap${platform}_${verId}Jar").get()
+                        artifact tasks.named("${platform_lower}_${verId}ShadowJar").get()
+                    }
                 }
-            } else {
-                maven {
-                    name = 'GithubPagesMaven'
-                    url = System.getenv('DEPLOY_TO_GITHUB_PACKAGES_URL')
-                    credentials {
-                        username = System.getenv('GITHUB_USER')
-                        password = System.getenv('GITHUB_TOKEN')
+            }
+
+            repositories {
+                if (System.getenv('DEPLOY_TO_GITHUB_PACKAGES_URL') == null) {
+                    maven {
+                        name = 'BuildDirMaven'
+                        url = rootProject.projectDir.toPath().parent.resolve('build').resolve('maven')
+                    }
+                } else {
+                    maven {
+                        name = 'GithubPagesMaven'
+                        url = System.getenv('DEPLOY_TO_GITHUB_PACKAGES_URL')
+                        credentials {
+                            username = System.getenv('GITHUB_USER')
+                            password = System.getenv('GITHUB_TOKEN')
+                        }
                     }
                 }
             }
         }
+    }
+}
+
+// If we reached the end and no version was built, we can fail to indicate the requested java_version had no matches
+gradle.taskGraph.whenReady { taskGraph ->
+    if (!anyVersionBuilt) {
+        throw new GradleException("No versions matched the requested java_version=${requestedJavaVersion}.")
     }
 }
