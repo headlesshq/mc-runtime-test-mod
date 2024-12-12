@@ -28,8 +28,61 @@ concurrency: # FIXME: prevent release commit cancellation
   cancel-in-progress: true
 
 jobs:
+  testbuild:
+    name: TestBuild
+    runs-on: blacksmith-2vcpu-ubuntu-2204
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Java 8
+        uses: useblacksmith/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 8
+
+      - name: Setup Java 16
+        uses: useblacksmith/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 16
+
+      - name: Setup Java 17
+        uses: useblacksmith/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Java 21
+        uses: useblacksmith/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: useblacksmith/setup-gradle/setup-gradle@v6
+        with:
+          cache-read-only: false
+          build-scan-publish: true
+          build-scan-terms-of-service-url: https://gradle.com/terms-of-service
+          build-scan-terms-of-service-agree: true
+
+      - name: Gradle build
+        run: >
+          ./gradlew build --stacktrace
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jars
+          path: |
+            **/build/libs/*.jar
+
   release-please:
     name: Release Please
+    if: github.event_name == 'fake' # FIXME: remove, testing purposes
     runs-on: blacksmith-2vcpu-ubuntu-2204
     outputs:
       release_created: ${{ steps.release-please.outputs.release_created }}
