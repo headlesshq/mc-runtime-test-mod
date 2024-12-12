@@ -70,6 +70,9 @@ jobs:
         uses: useblacksmith/setup-gradle/setup-gradle@v6
         with:
           cache-read-only: false
+          build-scan-publish: true
+          build-scan-terms-of-use-url: https://gradle.com/terms-of-service
+          build-scan-terms-of-use-agree: true
 
       - if: |
           steps.cache.outputs.cache-hit != 'true'
