@@ -67,7 +67,9 @@ jobs:
 
       - if: steps.cache.outputs.cache-hit != 'true'
         name: Setup Gradle
-        uses: useblacksmith/setup-gradle/setup-gradle@v5
+        uses: useblacksmith/setup-gradle/setup-gradle@v6
+        with:
+          cache-read-only: false
 
       - if: |
           steps.cache.outputs.cache-hit != 'true'
