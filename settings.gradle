@@ -15,10 +15,16 @@ pluginManagement {
             url = "https://maven.wagyourtail.xyz/releases"
         }
         maven {
-            url 'https://3arthqu4ke.github.io/maven'
+            url = "https://3arthqu4ke.github.io/maven"
         }
         maven {
             url = "https://maven.wagyourtail.xyz/snapshots"
+        }
+        maven {
+            url = "https://repo.spongepowered.org/maven"
+        }
+        maven {
+            url = "https://impactdevelopment.github.io/maven/"
         }
         gradlePluginPortal() {
             content {
@@ -28,12 +34,21 @@ pluginManagement {
     }
 }
 
-def loadVersions() {
-    // Collect and clean version names from the "versions" directory
-    def versions = fileTree("versions").files.name.collect { it.replaceAll("\\.properties", "") }
 
+def versionDirs = new File(rootDir, "versions").listFiles()
+  .findAll { it.isDirectory() } // Filter only directories
+  .findAll { new File(it, "build.gradle").exists() } // Filter directories containing build.gradle
+  .collect { it.name } // Collect directory names
+
+versionDirs.each { include ":versions:${it}" }
+
+
+println("${versionDirs}")
+
+
+def loadVersions(def directoryNames) {
     // Sort by semantic version
-    versions = versions.sort { a, b ->
+    def sortedVersions = directoryNames.sort { a, b ->
         def partsA = a.tokenize('.')*.toInteger()
         def partsB = b.tokenize('.')*.toInteger()
 
@@ -46,10 +61,22 @@ def loadVersions() {
         return partsA[2] <=> partsB[2]
     }
 
-    gradle.ext.mc_versions = versions
+    gradle.ext.mc_versions = sortedVersions
 }
 
-loadVersions()
+loadVersions(versionDirs)
+
+def setupPreprocessors(List<String> mcVersions, String currentVersion) {
+    StringBuilder sb = new StringBuilder();
+    mcVersions.eachWithIndex { ver, i ->
+        String verStr = ver.replace(".", "_");
+        sb.append("MC_${verStr}=${i}\n")
+        if (ver == currentVersion) {
+            sb.append("MC_VER=${i}\n")
+        }
+    }
+    new File(projectDir, "build.properties").text = sb.toString()
+}
 
 include 'api'
 rootProject.name = 'mc-runtime-test'
