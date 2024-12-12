@@ -37,36 +37,31 @@ jobs:
         with:
           fetch-depth: 1
 
-      - if: steps.cache.outputs.cache-hit != 'true'
-        name: Setup Java 8
+      - name: Setup Java 8
         uses: useblacksmith/setup-java@v5
         with:
           distribution: temurin
           java-version: 8
 
-      - if: steps.cache.outputs.cache-hit != 'true'
-        name: Setup Java 16
+      - name: Setup Java 16
         uses: useblacksmith/setup-java@v5
         with:
           distribution: temurin
           java-version: 16
 
-      - if: steps.cache.outputs.cache-hit != 'true'
-        name: Setup Java 17
+      - name: Setup Java 17
         uses: useblacksmith/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
 
-      - if: steps.cache.outputs.cache-hit != 'true'
-        name: Setup Java 21
+      - name: Setup Java 21
         uses: useblacksmith/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
 
-      - if: steps.cache.outputs.cache-hit != 'true'
-        name: Setup Gradle
+      - name: Setup Gradle
         uses: useblacksmith/setup-gradle/setup-gradle@v6
         with:
           cache-read-only: false
@@ -74,10 +69,7 @@ jobs:
           build-scan-terms-of-service-url: https://gradle.com/terms-of-service
           build-scan-terms-of-service-agree: true
 
-      - if: |
-          steps.cache.outputs.cache-hit != 'true'
-          && !inputs.release
-        name: Gradle build
+      - name: Gradle build
         run: >
           ./gradlew build --stacktrace
 
