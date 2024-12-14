@@ -1,1 +1,8 @@
-apply from: "${rootDir}/version.gradle"
+plugins {
+    id 'io.github.headlesshq.mcrt.java-conventions'
+}
+
+dependencies {
+    implementation project(':shared')
+    implementation project(':api')
+}

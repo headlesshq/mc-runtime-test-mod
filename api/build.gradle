@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'maven-publish'
-    id 'systems.manifold.manifold-gradle-plugin' version '0.0.2-alpha'
+    id 'systems.manifold.manifold-gradle-plugin'
 }
 
 group 'io.github.headlesshq'
@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    annotationProcessor("systems.manifold:manifold-preprocessor:${rootProject.manifold_version}")
+    annotationProcessor("systems.manifold:manifold-preprocessor:2024.1.37")
 }
 
 compileJava {
@@ -27,11 +27,12 @@ compileJava {
 afterEvaluate {
     publishing {
         publications {
-            "${name.toLowerCase()}"(MavenPublication) {
-                ((MavenPublication) it).groupId "${group}"
-                ((MavenPublication) it).artifactId "${archivesBaseName.toLowerCase()}"
-                ((MavenPublication) it).version "${version}"
-                from components.java
+            create(name.toLowerCase(), MavenPublication) {
+                groupId    = group
+                artifactId = archivesBaseName.toLowerCase()
+                version    = project.version  // or just version
+
+                from(components.java)
             }
         }
 

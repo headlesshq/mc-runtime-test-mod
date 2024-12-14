@@ -1,6 +1,4 @@
-plugins {
-    id 'io.github.headlesshq.mcrt.java-conventions'
-}
+id 'systems.manifold.manifold-gradle-plugin' version '0.0.2-alpha'
 
 dependencies {
     implementation project(':shared')

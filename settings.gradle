@@ -79,4 +79,5 @@ def setupPreprocessors(List<String> mcVersions, String currentVersion) {
 }
 
 include 'api'
+include ':shared'
 rootProject.name = 'mc-runtime-test'
