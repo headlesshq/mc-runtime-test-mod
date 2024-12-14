@@ -63,20 +63,39 @@ class VersionConventionPlugin implements Plugin<Project> {
         println "'mappings'          = ${currentMappings}"
 
         setupPreprocessors(project.rootProject.mc_versions, currentMinecraftVersion)
-
         def buildVersion = "${currentMinecraftVersion}-${project.rootProject.project(':api').project_version}"
 
         project.sourceSets {
             fabric {
+                java {
+                    srcDir "${project.rootDir}/shared/src/fabric/java"
+                }
+                resources {
+                    srcDir "${project.rootDir}/shared/src/fabric/resources"
+                }
                 compileClasspath += main.output
                 runtimeClasspath += main.output
             }
+
             lexforge {
+                java {
+                    srcDir "${project.rootDir}/shared/src/lexforge/java"
+                }
+                resources {
+                    srcDir "${project.rootDir}/shared/src/lexforge/resources"
+                }
                 compileClasspath += main.output
                 runtimeClasspath += main.output
             }
+
             if (currentLoaders.contains('neoforge')) {
                 neoforge {
+                    java {
+                        srcDir "${project.rootDir}/shared/src/neoforge/java"
+                    }
+                    resources {
+                        srcDir "${project.rootDir}/shared/src/neoforge/resources"
+                    }
                     compileClasspath += main.output
                     runtimeClasspath += main.output
                 }
@@ -149,6 +168,12 @@ class VersionConventionPlugin implements Plugin<Project> {
             implementation.extendsFrom jarLibs
         }
         project.sourceSets.main {
+            java {
+                srcDir "${project.rootDir}/shared/src/main/java"      // shared common code
+            }
+            resources {
+                srcDir "${project.rootDir}/shared/src/main/resources"
+            }
             compileClasspath += project.configurations.mainImplementation
             runtimeClasspath += project.configurations.mainImplementation
         }

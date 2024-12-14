@@ -1,10 +1,20 @@
 plugins {
+    //id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'java'
+    id 'maven-publish'
+    id 'systems.manifold.manifold-gradle-plugin'
     id 'io.github.headlesshq.mcrt.java-conventions'
+    // TODO: do we want forgix?
+    // id "io.github.pacifistmc.forgix" version "1.2.9"
+}
+
+// TODO: is this necessary?
+project.gradle.ext.getProperties().each { prop ->
+    rootProject.ext.set(prop.key, prop.value)
 }
 
 dependencies {
-    //implementation project(':shared')
-    
+    annotationProcessor("systems.manifold:manifold-preprocessor:2024.1.37")
 }
 
 manifold {

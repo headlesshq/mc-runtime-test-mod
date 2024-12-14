@@ -1,6 +1,0 @@
-id 'systems.manifold.manifold-gradle-plugin' version '0.0.2-alpha'
-
-dependencies {
-    implementation project(':shared')
-    implementation project(':api')
-}
