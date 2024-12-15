@@ -44,10 +44,16 @@ def versionDirs = new File(rootDir, "versions").listFiles()
   .collect { it.name } // Collect directory names
 
 versionDirs.each { include ":versions:${it}" }
-
-
 println("${versionDirs}")
 
+def setupPreprocessors(List<String> mcVersions) {
+    StringBuilder sb = new StringBuilder();
+    mcVersions.eachWithIndex { ver, i ->
+        String verStr = ver.replace(".", "_");
+        sb.append("MC_${verStr}=${i}\n")
+    }
+    new File(rootDir, "build.properties").text = sb.toString()
+}
 
 def loadVersions(def directoryNames) {
     // Sort by semantic version
@@ -64,22 +70,11 @@ def loadVersions(def directoryNames) {
         return partsA[2] <=> partsB[2]
     }
 
+    //setupPreprocessors(sortedVersions)
     gradle.ext.mc_versions = sortedVersions
 }
 
 loadVersions(versionDirs)
-
-def setupPreprocessors(List<String> mcVersions, String currentVersion) {
-    StringBuilder sb = new StringBuilder();
-    mcVersions.eachWithIndex { ver, i ->
-        String verStr = ver.replace(".", "_");
-        sb.append("MC_${verStr}=${i}\n")
-        if (ver == currentVersion) {
-            sb.append("MC_VER=${i}\n")
-        }
-    }
-    new File(projectDir, "build.properties").text = sb.toString()
-}
 
 include 'api'
 include ':shared'

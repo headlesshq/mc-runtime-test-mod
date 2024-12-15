@@ -2,23 +2,6 @@ plugins {
     id 'io.github.headlesshq.mcrt.java-conventions'
 }
 
-dependencies {
-    //implementation project(':shared')
-    
-}
-
-manifold {
-    manifoldVersion = '2024.1.37' //rootProject.manifold_version
-}
-
-group = 'io.github.headlesshq'
-base {
-    archivesName = 'mc-runtime-test'
-}
-
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-
 repositories {
     maven {
         url = "https://maven.fabricmc.net/"
@@ -37,3 +20,20 @@ repositories {
         url = "https://maven.wagyourtail.xyz/releases"
     }
 }
+
+dependencies {
+    //implementation project(':shared')
+    implementation project(':api')
+}
+
+manifold {
+    manifoldVersion = '2024.1.37' //rootProject.manifold_version
+}
+
+group = 'io.github.headlesshq'
+base {
+    archivesName = 'mc-runtime-test'
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
