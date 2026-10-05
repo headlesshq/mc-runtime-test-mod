@@ -1,21 +1,16 @@
 plugins {
     id 'java'
     id 'maven-publish'
-    id 'systems.manifold.manifold-gradle-plugin' version '0.0.2-alpha'
 }
 
-group 'io.github.headlesshq'
+group 'me.earth'
 version "$project_version"
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+try { // gradle 9
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+} catch (ignored) {
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    annotationProcessor("systems.manifold:manifold-preprocessor:${rootProject.manifold_version}")
 }
 
 compileJava {
@@ -29,7 +24,7 @@ afterEvaluate {
         publications {
             "${name.toLowerCase()}"(MavenPublication) {
                 ((MavenPublication) it).groupId "${group}"
-                ((MavenPublication) it).artifactId "${archivesBaseName.toLowerCase()}"
+                ((MavenPublication) it).artifactId "mc-runtime-test-api"
                 ((MavenPublication) it).version "${version}"
                 from components.java
             }

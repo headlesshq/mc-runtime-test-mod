@@ -44,19 +44,20 @@ Additionally, we use [manifold](https://github.com/manifold-systems/manifold) fo
 which allows us to support all the following Minecraft versions within one code base:
 
 <div align="center">
-  
-|     Version     | Forge | Fabric | NeoForge | 
-|:---------------:| :-: | :-: | :-: |
-|  1.21 - 1.21.3  | :white_check_mark:  | :white_check_mark:  | :white_check_mark: |
-| 1.20.2 - 1.20.6 | :white_check_mark:  | :white_check_mark:  | :white_check_mark: |
-|     1.20.1      | :white_check_mark:  | :white_check_mark:  | :warning:  |
-|  1.19 - 1.19.4  | :white_check_mark:  | :white_check_mark:  | - |
-|     1.18.2      | :white_check_mark:  | :white_check_mark:  | - |
-|     1.17.1      | :white_check_mark:  | :white_check_mark:  | - |
-|     1.16.5      | :white_check_mark:  | :white_check_mark:  | - |
-|     1.12.2      | :white_check_mark:  | :warning:  | - |
-|      1.8.9      | :white_check_mark:  | :warning:  | - |
-|     1.7.10      | :white_check_mark:  | :warning:  | - |
+
+| Version         | Forge           | Fabric          | NeoForge        |
+|-----------------|----------------|----------------|----------------|
+| 26.1 - 26.3     | ✔️              | ✔️              | ✔️              |
+| 1.21 - 1.21.11  | ✔️              | ✔️              | ✔️              |
+| 1.20.2 - 1.20.6 | ✔️              | ✔️              | ✔️              |
+| 1.20.1          | ✔️              | ✔️              | ⚠️              |
+| 1.19 - 1.19.4   | ✔️              | ✔️              | —              |
+| 1.18.2          | ✔️              | ✔️              | —              |
+| 1.17.1          | ✔️              | ✔️              | —              |
+| 1.16.5          | ✔️              | ✔️              | —              |
+| 1.12.2          | ✔️              | ⚠️              | —              |
+| 1.8.9           | ✔️              | ⚠️              | —              |
+| 1.7.10          | ✔️              | ⚠️              | —              |
 
 </div>
 
