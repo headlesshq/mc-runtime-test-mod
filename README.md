@@ -40,8 +40,6 @@ For more information how the command works checkout the [headlessmc](https://git
 
 The Mc-Runtime-Test-Mod has been written with [unimined](https://github.com/unimined/unimined)
 which allows us to support forge, neoforge and fabric.
-Additionally, we use [manifold](https://github.com/manifold-systems/manifold) for its Java Pre-Processor, 
-which allows us to support all the following Minecraft versions within one code base:
 
 <div align="center">
 
