@@ -1,5 +1,6 @@
 <h1 align="center" style="font-weight: normal;"><b>MC-Runtime-Test-Mods</b></h1>
 <p align="center">Mods for <a href="https://github.com/headlesshq/mc-runtime-test">Mc-Runtime-Test</a>.</p>
+<p align="center"><img src="docs/logo.png" alt="logo" style="width:250px;"></p>
 <p align="center">MC-Runtime-Test | <a href="https://github.com/3arthqu4ke/headlessmc">HMC</a> | <a href="https://github.com/3arthqu4ke/hmc-specifics">HMC-Specifics</a> | <a href="https://github.com/3arthqu4ke/hmc-optimizations">HMC-Optimizations</a></p>
 
 <div align="center">
@@ -23,10 +24,10 @@ When the game is ready, they join a SinglePlayer world, possibly execute all reg
 and then exit the game signaling success or failure via the exit code.
 
 Mc-Runtime-Test-Mods can be configured via a few System properties.
-These are listed and documented [here](api/src/main/java/io/github/headlesshq/mcrtapi/McRuntimeTest.java).
+These are listed and documented [here](api/src/main/java/me/earth/mc_runtime_test/McRuntimeTest.java).
 You can set these properties in the mc-runtime-test action with the headlessmc-command input, like this:
 ```yaml
-uses: 3arthqu4ke/mc-runtime-test@3.0.0
+uses: headlesshq/mc-runtime-test@... # specify version
 with:
   mc: 1.21.4
   modloader: fabric
