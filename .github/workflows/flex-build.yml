@@ -87,5 +87,5 @@ jobs:
         name: Upload artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: jars-${{ inputs.mc || inputs.dir }}${{ inputs.dir == 'gametest' && '-gametest' || '' }}
+          name: jars-${{ inputs.mc || inputs.dir }}${{ startsWith(inputs.dir, 'gametest') && '-gametest' || '' }}
           path: ${{ inputs.dir }}/build/libs/*.jar

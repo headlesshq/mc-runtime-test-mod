@@ -109,6 +109,7 @@ public abstract class MixinMinecraft {
                             System.exit(-1);
                         }
 
+                        LOGGER.info("All game tests passed, Successfully finished.");
                         mcRuntime$stop();
                     } else {
                         LOGGER.info("Waiting for GameTest: " + mcRuntimeTest$testTracker.getProgressBar());
@@ -125,7 +126,7 @@ public abstract class MixinMinecraft {
                 }
             }
         } else {
-            LOGGER.info("Waiting for player to load...");
+            LOGGER.info("Waiting for player to load... screen: " + screen);
         }
     }
 

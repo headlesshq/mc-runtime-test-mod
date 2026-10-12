@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "clientgametest",
+  "version": "${version}",
+
+  "name": "GameTest",
+  "description": "Mod to test the Minecraft GameTest framework with mc-runtime-test",
+  "authors": [
+    "3arthqu4ke"
+  ],
+  "contact": {
+    "homepage": "https://github.com/headlesshq/mc-runtime-test",
+    "sources": "https://github.com/headlesshq/mc-runtime-test"
+  },
+
+  "license": "MIT",
+
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "me.earth.clientgametest.fabric.FabricGameTests"
+    ]
+  },
+
+  "depends": {
+    "fabricloader": ">=0.14.19",
+    "minecraft": "~1.21.0",
+    "fabric-gametest-api-v1": "*",
+    "java": ">=21"
+  }
+}
