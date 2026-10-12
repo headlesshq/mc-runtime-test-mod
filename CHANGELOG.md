@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.0.1](https://github.com/headlesshq/mc-runtime-test-mod/compare/5.0.0...5.0.1) (2026-10-12)
+
+
+### Bug Fixes
+
+* **mod:** fix datapack screens, game tests ([#6](https://github.com/headlesshq/mc-runtime-test-mod/issues/6)) ([538293b](https://github.com/headlesshq/mc-runtime-test-mod/commit/538293bb07e835d3ff2d97affa2cd03aa3712741))
+* **release:** fix forge being released as neoforge mod ([eec656f](https://github.com/headlesshq/mc-runtime-test-mod/commit/eec656f1265935c9c794fe658f41d8e64ae4c4f8))
+
 ## [5.0.0](https://github.com/headlesshq/mc-runtime-test-mod/compare/4.5.2...5.0.0) (2026-10-12)
 
 
