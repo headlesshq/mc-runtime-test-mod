@@ -9,24 +9,6 @@ name: Gametest Regression
 #   https://github.com/headlesshq/mc-runtime-test/issues/121 (Fabric: stuck waiting for gametests)
 
 "on":
-  pull_request:
-    paths:
-      - api/**
-      - 1_21/**
-      - gametest_1_21/**
-      - .github/scripts/check-gametest-log.sh
-      - .github/workflows/flex-build.yml
-      - .github/workflows/gametest-regression.yml
-  push:
-    branches:
-      - main
-    paths:
-      - api/**
-      - 1_21/**
-      - gametest_1_21/**
-      - .github/scripts/check-gametest-log.sh
-      - .github/workflows/flex-build.yml
-      - .github/workflows/gametest-regression.yml
   workflow_dispatch:
 
 concurrency:
