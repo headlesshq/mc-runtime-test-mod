@@ -1,0 +1,122 @@
+---
+name: Gametest Regression
+
+# Runs the clientgametest mod, which registers its gametests like any regular mod does,
+# together with mc-runtime-test on headlesshq/mc-runtime-test@main.
+# Regression tests for:
+#   https://github.com/headlesshq/mc-runtime-test/issues/119 (NeoForge/Forge: no gametests found in production)
+#   https://github.com/headlesshq/mc-runtime-test/issues/120 (Forge: stuck on the "Experimental Settings" screen)
+#   https://github.com/headlesshq/mc-runtime-test/issues/121 (Fabric: stuck waiting for gametests)
+
+"on":
+  pull_request:
+    paths:
+      - api/**
+      - 1_21/**
+      - gametest_1_21/**
+      - .github/scripts/check-gametest-log.sh
+      - .github/workflows/flex-build.yml
+      - .github/workflows/gametest-regression.yml
+  push:
+    branches:
+      - main
+    paths:
+      - api/**
+      - 1_21/**
+      - gametest_1_21/**
+      - .github/scripts/check-gametest-log.sh
+      - .github/workflows/flex-build.yml
+      - .github/workflows/gametest-regression.yml
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { dir: 1_21, mc: 1.21.1, lex: 52.0.2, neo: 4, java: 21 }
+          - { dir: gametest_1_21, mc: 1.21.1, lex: 52.0.2, neo: 4, java: 21 }
+    uses: ./.github/workflows/flex-build.yml
+    with:
+      dir: ${{ matrix.dir }}
+      mc: ${{ matrix.mc }}
+      lex: ${{ matrix.lex }}
+      neo: ${{ matrix.neo }}
+      java: ${{ matrix.java }}
+
+  run:
+    name: Run ${{ matrix.modloader }} ${{ matrix.mc }}
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { mc: 1.21.1, type: lexforge, modloader: forge, java: 21 }
+          - { mc: 1.21.1, type: neoforge, modloader: neoforge, java: 21 }
+          - { mc: 1.21.1, type: fabric, modloader: fabric, java: 21, fabric-api: 0.116.7, fabric-gametest-api: 2.0.9+50ed0faf7a }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: .github/scripts
+
+      - name: Download mc-runtime-test
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: jars-${{ matrix.mc }}
+          path: jars
+
+      - name: Download clientgametest
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: jars-${{ matrix.mc }}-gametest
+          path: jars
+
+      - name: Stage mods
+        run: |
+          mkdir -p run/mods
+          cp jars/mc-runtime-test-${{ matrix.mc }}-*-${{ matrix.type }}-release.jar run/mods
+          cp jars/clientgametest-${{ matrix.mc }}-*-${{ matrix.type }}.jar run/mods
+          ls -la run/mods
+
+      - name: Setup Java temurin-${{ matrix.java }}
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: temurin
+
+      - name: Run game
+        # The issues manifested as hangs, so a hang has to fail the job.
+        timeout-minutes: 6
+        uses: headlesshq/mc-runtime-test@main
+        with:
+          mc: ${{ matrix.mc }}
+          modloader: ${{ matrix.modloader }}
+          java: ${{ matrix.java }}
+          mc-runtime-test: none
+          # No inner quotes, otherwise HeadlessMC passes both properties as a single jvm argument.
+          headlessmc-command: --jvm "-Djava.awt.headless=true -DMcRuntimeGameTestMinExpectedGameTests=1"
+          fabric-api: ${{ matrix.fabric-api || 'none' }}
+          fabric-gametest-api: ${{ matrix.fabric-gametest-api || 'none' }}
+
+      - name: Check that the gametests ran
+        if: always()
+        run: .github/scripts/check-gametest-log.sh run/logs/latest.log
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: logs-${{ matrix.modloader }}-${{ matrix.mc }}
+          path: |
+            run/logs
+            run/crash-reports
+          if-no-files-found: ignore

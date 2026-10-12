@@ -80,7 +80,7 @@ unimined.minecraft(sourceSets.neoforge) {
 
     neoForged {
         loader project.neoforge_version
-        mixinConfig 'mc_runtime_test.mixins.json'
+        mixinConfig(['mc_runtime_test.mixins.json', 'mc_runtime_test.gametest.mixins.json'])
     }
 
     minecraftRemapper.config {
@@ -99,7 +99,7 @@ unimined.minecraft(sourceSets.lexforge) {
 
     minecraftForge {
         loader project.lexforge_version
-        mixinConfig 'mc_runtime_test.mixins.json'
+        mixinConfig(['mc_runtime_test.mixins.json', 'mc_runtime_test.gametest.mixins.json'])
     }
 
     minecraftRemapper.config {
@@ -137,6 +137,9 @@ dependencies {
     // yes, I actually want this at runtime to use assertions!
     jarLibs 'org.junit.jupiter:junit-jupiter-api:5.10.1'
     jarLibs project(':api')
+    // for the loader specific mixins, the api is shaded into the release jars through jarLibs
+    neoforgeCompileOnly project(':api')
+    lexforgeCompileOnly project(':api')
 }
 
 afterEvaluate {
@@ -207,7 +210,10 @@ tasks.withType(org.gradle.jvm.tasks.Jar).configureEach {
     manifest {
         attributes(
             'Implementation-Title': 'MC-Runtime-Test',
-            'MixinConfigs': "mc_runtime_test.mixins.json",
+            // neoforge and lexforge jars also carry the loader specific mc_runtime_test.gametest.mixins.json
+            'MixinConfigs': name.toLowerCase().contains('forge')
+                ? 'mc_runtime_test.mixins.json,mc_runtime_test.gametest.mixins.json'
+                : 'mc_runtime_test.mixins.json',
             'Implementation-Version': project.version,
         )
     }
