@@ -1,5 +1,16 @@
 # Changelog
 
+## [5.0.0](https://github.com/headlesshq/mc-runtime-test-mod/compare/4.5.2...5.0.0) (2026-10-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* **release:** Initial release ([#3](https://github.com/headlesshq/mc-runtime-test-mod/issues/3))
+
+### Features
+
+* **release:** Initial release ([#3](https://github.com/headlesshq/mc-runtime-test-mod/issues/3)) ([7e39a37](https://github.com/headlesshq/mc-runtime-test-mod/commit/7e39a37fd18766cba4b1b88a6ba1b67d6f9d1d26))
+
 ## [4.5.2](https://github.com/headlesshq/mc-runtime-test/compare/4.5.1...4.5.2) (2026-10-03)
 
 
