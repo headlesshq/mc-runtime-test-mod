@@ -91,13 +91,14 @@ jobs:
 
       - name: Prepare assets
         run: |
-          mkdir -p out
+          mkdir -p out/latest out/version
           for modloader in fabric forge neoforge; do
             type=$modloader
             if [ "$modloader" = "forge" ]; then type=lexforge; fi
             file=$(find jars -type f -name "*-${type}-release.jar" | head -n 1)
             if [ -f "$file" ]; then
-              cp "$file" "out/mc-runtime-test-${{ matrix.mc }}-${modloader}-latest.jar"
+              cp "$file" "out/latest/mc-runtime-test-${{ matrix.mc }}-${modloader}-latest.jar"
+              cp "$file" "out/version/mc-runtime-test-${{ matrix.mc }}-${modloader}-${{ needs.matrices.outputs.version }}.jar"
             fi
           done
 
@@ -118,7 +119,7 @@ jobs:
           name: ${{ matrix.mc }}-${{ needs.matrices.outputs.version }}
           prerelease: true
           body: "Version [${{ needs.matrices.outputs.version }}](https://github.com/headlesshq/mc-runtime-test-mod/releases/tag/${{ needs.matrices.outputs.version }})"
-          files: out/*
+          files: out/version/*
           fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -130,7 +131,7 @@ jobs:
           name: ${{ matrix.mc }}-latest
           prerelease: true
           body: "Version [${{ needs.matrices.outputs.version }}](https://github.com/headlesshq/mc-runtime-test-mod/releases/tag/${{ needs.matrices.outputs.version }})"
-          files: out/*
+          files: out/latest/*
           fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
