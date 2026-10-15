@@ -45,7 +45,7 @@ jobs:
           - { mc: 1.21.1, type: fabric, modloader: fabric, java: 21, fabric-api: 0.116.7, fabric-gametest-api: 2.0.9+50ed0faf7a }
     steps:
       - name: Checkout
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 1
           sparse-checkout: .github/scripts
