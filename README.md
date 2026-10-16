@@ -46,21 +46,18 @@ which allows us to support forge, neoforge and fabric.
 
 | Version         | Forge           | Fabric          | NeoForge        |
 |-----------------|----------------|----------------|----------------|
-| 26.1 - 26.3     | ✔️              | ✔️              | ✔️              |
-| 1.21 - 1.21.11  | ✔️              | ✔️              | ✔️              |
-| 1.20.2 - 1.20.6 | ✔️              | ✔️              | ✔️              |
-| 1.20.1          | ✔️              | ✔️              | ⚠️              |
-| 1.19 - 1.19.4   | ✔️              | ✔️              | —              |
-| 1.18.2          | ✔️              | ✔️              | —              |
-| 1.17.1          | ✔️              | ✔️              | —              |
-| 1.16.5          | ✔️              | ✔️              | —              |
-| 1.12.2          | ✔️              | ⚠️              | —              |
-| 1.8.9           | ✔️              | ⚠️              | —              |
-| 1.7.10          | ✔️              | ⚠️              | —              |
+| 26.1 - 26.3     | ✅              | ✅              | ✅              |
+| 1.21 - 1.21.11  | ✅              | ✅              | ✅              |
+| 1.20.1 - 1.20.6 | ✅              | ✅              | ✅              |
+| 1.19 - 1.19.4   | ✅              | ✅              | —              |
+| 1.18.2          | ✅              | ✅              | —              |
+| 1.17.1          | ✅              | ✅              | —              |
+| 1.16.5          | ✅              | ✅              | —              |
+| 1.12.2          | ✅              | ✅              | —              |
+| 1.8.9           | ✅              | ✅              | —              |
+| 1.7.10          | ✅              | ✅              | —              |
 
 </div>
-
-Versions marked with :warning: have not been tested yet, HeadlessMc should support them, though.
 
 # Running your own tests
 MC-Runtime-Test does not provide a framework for full integration tests.
