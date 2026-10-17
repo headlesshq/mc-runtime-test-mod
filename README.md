@@ -72,11 +72,11 @@ at minimum and otherwise fail if not enough gametests have been found.
 Do not add inner quotes, `--jvm '"-Da=b -Dc=d"'` passes `-Da=b -Dc=d` to the JVM as a single argument,
 use `--jvm "-Da=b -Dc=d"` instead.
 
-The [gametest_1_21](gametest_1_21) mod registers gametests the same way regular mods do in production
+The [gametest_1_21](versions/gametest_1_21) mod registers gametests the same way regular mods do in production
 and is run by the [Gametest Regression](.github/workflows/gametest-regression.yml) workflow.
 To reproduce a run locally (requires `xvfb-run`):
 ```shell
 .github/scripts/run-client-gametest.sh neoforge 1.21.1 \
-  1_21/build/libs/mc-runtime-test-1.21.1-*-neoforge-release.jar \
-  gametest_1_21/build/libs/clientgametest-1.21.1-*-neoforge.jar
+  versions/1_21/build/libs/mc-runtime-test-1.21.1-*-neoforge-release.jar \
+  versions/gametest_1_21/build/libs/clientgametest-1.21.1-*-neoforge.jar
 ```
