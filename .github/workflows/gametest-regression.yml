@@ -22,8 +22,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { dir: 1_21, mc: 1.21.1, lex: 52.0.2, neo: 4, java: 21 }
-          - { dir: gametest_1_21, mc: 1.21.1, lex: 52.0.2, neo: 4, java: 21 }
+          - { dir: versions/1_21, mc: 1.21.1, lex: 52.0.2, neo: 4, java: 21 }
+          - { dir: versions/gametest_1_21, mc: 1.21.1, lex: 52.0.2, neo: 4, java: 21 }
     uses: ./.github/workflows/flex-build.yml
     with:
       dir: ${{ matrix.dir }}
