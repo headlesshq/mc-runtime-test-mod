@@ -78,7 +78,7 @@ jobs:
       - name: Run game
         # The issues manifested as hangs, so a hang has to fail the job.
         timeout-minutes: 6
-        uses: headlesshq/mc-runtime-test@a4a1825b8ed1fc4980bf5c3cf8bc703e1f28548d # main
+        uses: headlesshq/mc-runtime-test@e34ed3b7beacf75dd54482bf5795c662a5fe6b1d # main
         with:
           mc: ${{ matrix.mc }}
           modloader: ${{ matrix.modloader }}
