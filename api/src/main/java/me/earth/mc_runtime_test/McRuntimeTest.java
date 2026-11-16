@@ -14,6 +14,10 @@ public class McRuntimeTest {
      */
     public static final boolean GAME_TESTS_FAIL_ON_OPTIONAL = Boolean.parseBoolean(System.getProperty("McRuntimeGameTestFailOnOptional", "true"));
     /**
+     * Game test namespaces to search for tests in. (Comma separated)
+     */
+    public static final String GAME_TEST_NAMESPACES = System.getProperty("McRuntimeGameTestNamespaces");
+    /**
      * Fails if less game tests than this get found.
      */
     public static final int MIN_GAME_TESTS_TO_FIND = Integer.parseInt(System.getProperty("McRuntimeGameTestMinExpectedGameTests", "0"));
@@ -29,6 +33,8 @@ public class McRuntimeTest {
      * Same as {@link #CLOSE_CREATE_WORLD_SCREEN} but for any screen displayed after world and player have been loaded.
      */
     public static final boolean CLOSE_ANY_SCREEN = Boolean.parseBoolean(System.getProperty("McRuntimeGameTestCloseAnyScreen", "false"));
+
+    public static final boolean SPAWN_STRUCTURES = System.getProperty("McRuntimeGameTestInstance") != null || (GAME_TEST_NAMESPACES != null && !GAME_TEST_NAMESPACES.isEmpty());
 
     /**
      * Our Hook in Minecrafts setScreen/displayGuiScreen.

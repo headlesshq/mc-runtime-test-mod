@@ -38,7 +38,7 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - if: github.event_name == 'push' # TODO: explicit on push to main
+      - if: github.event_name == 'push' && github.ref_name == 'main'
         id: release-please
         name: Run Release Please
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5

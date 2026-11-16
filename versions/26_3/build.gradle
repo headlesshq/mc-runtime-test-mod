@@ -80,8 +80,7 @@ unimined.minecraft(sourceSets.neoforge) {
 
     neoForged {
         loader project.neoforge_version
-        mixinConfig 'mc_runtime_test.mixins.json'
-        mixinConfig 'mc_runtime_test.gametest.mixins.json'
+        mixinConfig(['mc_runtime_test.mixins.json', 'mc_runtime_test.gametest.mixins.json'])
     }
 
     minecraftRemapper.config {
@@ -100,8 +99,7 @@ unimined.minecraft(sourceSets.lexforge) {
 
     minecraftForge {
         loader project.lexforge_version
-        mixinConfig 'mc_runtime_test.mixins.json'
-        mixinConfig 'mc_runtime_test.gametest.mixins.json'
+        mixinConfig(['mc_runtime_test.mixins.json', 'mc_runtime_test.gametest.mixins.json'])
     }
 
     minecraftRemapper.config {
@@ -211,9 +209,9 @@ tasks.withType(org.gradle.jvm.tasks.Jar).configureEach {
     manifest {
         attributes(
             'Implementation-Title': 'MC-Runtime-Test',
-            'MixinConfigs': name.toLowerCase().contains('lexforge')
-                ? 'mc_runtime_test.mixins.json,mc_runtime_test.gametest.mixins.json'
-                : 'mc_runtime_test.mixins.json',
+            'MixinConfigs': name.toLowerCase().contains('forge')
+                    ? 'mc_runtime_test.mixins.json,mc_runtime_test.gametest.mixins.json'
+                    : 'mc_runtime_test.mixins.json',
             'Implementation-Version': project.version,
         )
     }

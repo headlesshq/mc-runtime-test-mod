@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_8",
   "client": [
     "ICreateWorldScreen",
-    "MixinMinecraft"
+    "MixinMinecraft",
+    "MixinWorldOpenFlows"
   ],
   "injectors": {
     "defaultRequire": 1

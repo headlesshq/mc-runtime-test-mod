@@ -6,7 +6,8 @@
   "client": [
     "ICreateWorldScreen",
     "MixinMinecraft",
-    "MixinGui"
+    "MixinGui",
+    "MixinWorldOpenFlows"
   ],
   "injectors": {
     "defaultRequire": 1

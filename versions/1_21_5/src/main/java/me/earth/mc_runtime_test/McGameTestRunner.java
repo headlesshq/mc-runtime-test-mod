@@ -8,19 +8,21 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.*;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.levelgen.Heightmap;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -49,7 +51,7 @@ public class McGameTestRunner {
             AtomicReference<Optional<MultipleTestTracker>> result = new AtomicReference<>();
             CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
             dispatcher.register(Commands.literal("test").executes(ctx -> {
-                Collection<Holder.Reference<GameTestInstance>> testFunctions = TestFinder.builder().allNearby(ctx).findTests().toList();
+                Collection<Holder.Reference<GameTestInstance>> testFunctions = getTestFunctions(ctx, level);
                 LOGGER.info("TestFunctions: " + testFunctions);
                 if (testFunctions.size() < McRuntimeTest.MIN_GAME_TESTS_TO_FIND) {
                     LOGGER.error("Failed to find the minimum amount of gametests, expected " + McRuntimeTest.MIN_GAME_TESTS_TO_FIND + ", but found " + testFunctions.size());
@@ -62,12 +64,17 @@ public class McGameTestRunner {
                 GameTestBatchFactory.TestDecorator testDecorator = (reference, serverLevel) -> Stream.of(
                         new GameTestInfo(reference, Rotation.NONE, serverLevel, RetryOptions.noRetries())
                 );
-                Collection<GameTestBatch> batches = GameTestBatchFactory.divideIntoBatches(testFunctions, testDecorator, ctx.getSource().getLevel());
+                Collection<GameTestBatch> batches = GameTestBatchFactory.divideIntoBatches(testFunctions, GameTestBatchFactory.DIRECT, ctx.getSource().getLevel());
 
 
                 FailedTestTracker.forgetFailedTests();
 
-                GameTestRunner gameTestRunner = GameTestRunner.Builder.fromBatches(batches, level).build();
+                GameTestRunner.Builder builder = GameTestRunner.Builder.fromBatches(batches, level);
+                if (McRuntimeTest.SPAWN_STRUCTURES) {
+                    builder.newStructureSpawner(new StructureGridSpawner(
+                            player.blockPosition().offset(0, 4, 8), 1, false));
+                }
+                GameTestRunner gameTestRunner = builder.build();
                 gameTestRunner.start();
 
                 MultipleTestTracker multipleTestTracker = new MultipleTestTracker(gameTestRunner.getTestInfos());
@@ -96,4 +103,29 @@ public class McGameTestRunner {
         }).get(60, TimeUnit.SECONDS);
     }
 
+    private static Collection<Holder.Reference<GameTestInstance>> getTestFunctions(CommandContext<CommandSourceStack> ctx, ServerLevel server) {
+        var registryList = server.registryAccess().lookupOrThrow(Registries.TEST_INSTANCE);
+        if (McRuntimeTest.GAME_TEST_NAMESPACES != null && !McRuntimeTest.GAME_TEST_NAMESPACES.isEmpty()) {
+            return registryList.listElements().filter(
+                    test -> !test.value().manualOnly()
+                            && !test.key().location().toString().equals("minecraft:always_pass")
+            ).toList();
+        }
+        String instance = System.getProperty("McRuntimeGameTestInstance");
+        // Named tests can run in a fresh world without preplaced test
+        // blocks. Missing registry entries must fail rather than skip.
+        return instance == null
+                ? TestFinder.builder().allNearby(ctx).findTests().toList()
+                : Arrays.stream(instance.split(","))
+                .map(name ->
+                        registryList.getOrThrow(ResourceKey.create(Registries.TEST_INSTANCE, ResourceLocation.parse(name)))
+                )
+                .toList();
+
+    }
+    private static BlockPos createTestPositionAround(Player player, ServerLevel level) {
+        BlockPos blockPos = player.getOnPos();
+        int y = level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, blockPos).getY();
+        return new BlockPos(blockPos.getX(), y + 1, blockPos.getZ() + 3);
+    }
 }

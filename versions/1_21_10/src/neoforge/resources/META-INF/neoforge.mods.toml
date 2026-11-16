@@ -15,6 +15,9 @@ description = '''
 [[mixins]]
 config="mc_runtime_test.mixins.json"
 
+[[mixins]]
+config="mc_runtime_test.gametest.mixins.json"
+
 [[dependencies.mc_runtime_test]]
 modId = "minecraft"
 mandatory = true
