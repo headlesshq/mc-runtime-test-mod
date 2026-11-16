@@ -9,7 +9,7 @@
 #   WORK_DIR            working directory (default: build/run-client/<modloader>-<mc>)
 #   JAVA_HOME           Java used for the game (default: java on PATH)
 #   HMC_JAVA            Java used for HeadlessMC (needs 21+, default: java on PATH)
-#   HMC_VERSION         HeadlessMC version (default: 3.0.0-RC5, same as mc-runtime-test@main)
+#   HMC_VERSION         HeadlessMC version (default: 3.0.0-RC9, same as mc-runtime-test@main)
 #   MC_DIR              .minecraft directory to use (default: $WORK_DIR/.minecraft)
 #   FABRIC_API          fabric-api version to download, e.g. 0.116.7
 #   FABRIC_GAMETEST_API fabric-gametest-api-v1 version to download, e.g. 2.0.9+50ed0faf7a
@@ -28,7 +28,7 @@ shift 2
 
 root="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
 work="${WORK_DIR:-$root/build/run-client/$modloader-$mc}"
-hmc_version="${HMC_VERSION:-3.0.0-RC5}"
+hmc_version="${HMC_VERSION:-3.0.0-RC9}"
 hmc_java="${HMC_JAVA:-java}"
 java_home="${JAVA_HOME:-$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")}"
 
