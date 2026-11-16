@@ -6,7 +6,9 @@
     'config:best-practices',
   ],
   timezone: 'UTC',
-  dependencyDashboard: true,
+  dependencyDashboard: {
+    enabled: true,
+  },
   platformCommit: 'enabled',
   prCreation: 'not-pending',
   suppressNotifications: [
@@ -18,13 +20,11 @@
     'devcontainer',
     'nix',
   ],
-  // the nix manager is in beta and disabled by default
   nix: {
     enabled: true,
   },
   packageRules: [
     {
-      // the flake only provides the dev shell, so its inputs are updated together once a month
       matchManagers: [
         'nix',
       ],
