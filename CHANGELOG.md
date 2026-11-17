@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.0](https://github.com/headlesshq/mc-runtime-test-mod/compare/5.0.1...5.1.0) (2026-11-16)
+
+
+### Features
+
+* **gametest:** runner updates ([#32](https://github.com/headlesshq/mc-runtime-test-mod/issues/32)) ([ac31003](https://github.com/headlesshq/mc-runtime-test-mod/commit/ac310035f0cc64a782c393572e38e3f758b20600))
+
 ## [5.0.1](https://github.com/headlesshq/mc-runtime-test-mod/compare/5.0.0...5.0.1) (2026-10-12)
 
 
